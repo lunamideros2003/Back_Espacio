@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     jwt_secret: str = "astroia-dev-secret-cambia-esto"
     nasa_api_key: str = "DEMO_KEY"
     groq_api_key: str = ""
+    gemini_api_key: str = ""
+    # auto | groq | gemini | local
+    ai_provider: str = "auto"
+    gemini_model: str = "gemini-3.5-flash"
     cors_origins: str = (
         "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000"
     )

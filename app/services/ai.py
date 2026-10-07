@@ -58,46 +58,126 @@ def local_reply(message: str, objects: list[CelestialObject], user_level: str = 
     )
 
 
-async def chat_with_astroia(message: str, objects: list[CelestialObject], level: str, history: list[dict] | None = None):
-    history = history or []
-    if not settings.groq_api_key:
-        return {"reply": local_reply(message, objects, level), "provider": "local"}
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = "llama-3.1-8b-instant"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+# Si el modelo configurado no existe en la cuenta, probamos estos.
+GEMINI_MODEL_FALLBACKS = ("gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.0-flash")
 
+
+def build_system_prompt(objects: list[CelestialObject], level: str) -> str:
     catalog = "\n".join(
         f"- {o.name} [{o.type}]: {o.explain_beginner[:180]}" for o in objects[:24]
     )
-    system = (
+    return (
         f"Eres AstroIA, tutora de astronomía en español. Adapta el nivel: {level}. "
         f"Sé clara, entusiasta y precisa. Catálogo:\n{catalog}"
     )
-    messages = [{"role": "system", "content": system}]
+
+
+def build_messages(history: list[dict], message: str) -> list[dict]:
+    messages = []
     for item in history[-8:]:
         if item.get("role") in {"user", "assistant"} and item.get("content"):
             messages.append({"role": item["role"], "content": item["content"]})
     messages.append({"role": "user", "content": message})
+    return messages
 
+
+def active_providers() -> list[str]:
+    """Proveedores a intentar, en orden. 'auto' usa el primero con clave válida."""
+    pref = (settings.ai_provider or "auto").strip().lower()
+    if pref == "groq":
+        return ["groq"] if settings.groq_api_key else []
+    if pref == "gemini":
+        return ["gemini"] if settings.gemini_api_key else []
+    if pref == "local":
+        return []
+    order = []
+    if settings.groq_api_key:
+        order.append("groq")
+    if settings.gemini_api_key:
+        order.append("gemini")
+    return order
+
+
+async def _groq_reply(system: str, messages: list[dict]) -> str | None:
+    payload = [{"role": "system", "content": system}, *messages]
     try:
         async with httpx.AsyncClient(timeout=30) as client:
             res = await client.post(
-                "https://api.groq.com/openai/v1/chat/completions",
+                GROQ_URL,
                 headers={
                     "Authorization": f"Bearer {settings.groq_api_key}",
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": "llama-3.1-8b-instant",
-                    "messages": messages,
+                    "model": GROQ_MODEL,
+                    "messages": payload,
                     "temperature": 0.5,
                     "max_tokens": 500,
                 },
             )
         if res.status_code != 200:
-            return {"reply": local_reply(message, objects, level), "provider": "local"}
+            return None
         data = res.json()
-        reply = (data.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
-        return {"reply": reply or local_reply(message, objects, level), "provider": "groq"}
+        text = (data.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
+        return text or None
     except httpx.HTTPError:
-        return {"reply": local_reply(message, objects, level), "provider": "local"}
+        return None
+
+
+async def _gemini_reply(system: str, messages: list[dict]) -> str | None:
+    contents = [
+        {
+            "role": "model" if m["role"] == "assistant" else "user",
+            "parts": [{"text": m["content"]}],
+        }
+        for m in messages
+    ]
+    body = {
+        "system_instruction": {"parts": [{"text": system}]},
+        "contents": contents,
+        "generationConfig": {"temperature": 0.5, "maxOutputTokens": 600},
+    }
+    headers = {"x-goog-api-key": settings.gemini_api_key, "Content-Type": "application/json"}
+    tried = [settings.gemini_model, *[m for m in GEMINI_MODEL_FALLBACKS if m != settings.gemini_model]]
+
+    async with httpx.AsyncClient(timeout=35) as client:
+        for model in tried:
+            try:
+                res = await client.post(GEMINI_URL.format(model=model), headers=headers, json=body)
+            except httpx.HTTPError:
+                return None
+            if res.status_code == 404:
+                continue  # modelo inexistente: probamos el siguiente
+            if res.status_code != 200:
+                return None  # clave inválida o cuota: no tiene sentido reintentar
+            try:
+                parts = res.json()["candidates"][0]["content"]["parts"]
+                text = "".join(p.get("text", "") for p in parts).strip()
+            except (KeyError, IndexError, TypeError):
+                return None
+            if text:
+                return text
+    return None
+
+
+async def chat_with_astroia(message: str, objects: list[CelestialObject], level: str, history: list[dict] | None = None):
+    history = history or []
+    system = build_system_prompt(objects, level)
+    messages = build_messages(history, message)
+
+    for name in active_providers():
+        reply = (
+            await _groq_reply(system, messages)
+            if name == "groq"
+            else await _gemini_reply(system, messages)
+        )
+        if reply:
+            return {"reply": reply, "provider": name}
+
+    return {"reply": local_reply(message, objects, level), "provider": "local"}
 
 
 def classify_description(brightness: int, color: str, moving: str, shape: str) -> dict:

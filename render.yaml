@@ -21,5 +21,11 @@ services:
         value: DEMO_KEY
       - key: GROQ_API_KEY
         sync: false
+      - key: AI_PROVIDER
+        value: auto
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash
       - key: CORS_ORIGINS
         value: http://localhost:5173
