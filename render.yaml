@@ -27,5 +27,6 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-3.5-flash
+      # Origenes extra. El de Vercel ya viene en el codigo, no hace falta ponerlo.
       - key: CORS_ORIGINS
-        value: http://localhost:5173
+        value: ""

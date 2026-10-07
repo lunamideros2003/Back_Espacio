@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -11,10 +13,19 @@ from app.services.nasa import get_apod
 Base.metadata.create_all(bind=engine)
 seed_if_empty()
 
-app = FastAPI(title="AstroIA API", version="1.0.0")
+CORS_ORIGINS = settings.cors_list
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    print(f"[AstroIA] Origenes CORS permitidos: {CORS_ORIGINS}")
+    yield
+
+
+app = FastAPI(title="AstroIA API", version="1.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_list,
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,6 +40,18 @@ async def http_error(_request, exc: HTTPException):
 @app.get("/api/health")
 def health():
     return {"ok": True, "name": "AstroIA API", "stack": "FastAPI"}
+
+
+@app.get("/api/debug/cors")
+def debug_cors(request: Request):
+    """Diagnostico: muestra que origen llego y que la API tiene permitido."""
+    origin = request.headers.get("origin", "")
+    return {
+        "originRecibido": origin,
+        "permitido": origin in CORS_ORIGINS,
+        "origenesPermitidos": CORS_ORIGINS,
+        "corsDesdeVariable": [o.strip() for o in settings.cors_origins.split(",") if o.strip()],
+    }
 
 
 @app.get("/api/apod")
