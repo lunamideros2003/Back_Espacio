@@ -4,6 +4,11 @@ Las coordenadas son del epoca J2000. La proyeccion y el calculo viven en
 `project` y `build_chart` (mismo modulo).
 """
 
+import math
+from datetime import datetime
+
+from app.services.sky import body_horizon, star_horizon
+
 # Coordenadas en horas de ascension recta (ra_hours) y grados de declinacion (dec_deg).
 STAR_CATALOG = [
     {"name": "Sirio", "ra_hours": 6.7525, "dec_deg": -16.7161, "magnitude": -1.46, "constellation": "Can Mayor"},
@@ -109,3 +114,121 @@ CONSTELLATION_LINES = [
     ("Pherkad", "Kochab"),
     ("Kochab", "Eta UMi"),
 ]
+
+VIEWBOX = 1000
+CENTER = VIEWBOX / 2
+RADIUS = 450.0
+
+CHART_BODIES = [
+    {"slug": "sol", "name": "Sol", "astronomy_body": "sun", "type": "star", "size": 13.0},
+    {"slug": "luna", "name": "Luna", "astronomy_body": "moon", "type": "moon", "size": 11.0},
+    {"slug": "mercurio", "name": "Mercurio", "astronomy_body": "mercury", "type": "planet", "size": 7.0},
+    {"slug": "venus", "name": "Venus", "astronomy_body": "venus", "type": "planet", "size": 8.5},
+    {"slug": "marte", "name": "Marte", "astronomy_body": "mars", "type": "planet", "size": 7.5},
+    {"slug": "jupiter", "name": "Júpiter", "astronomy_body": "jupiter", "type": "planet", "size": 9.5},
+    {"slug": "saturno", "name": "Saturno", "astronomy_body": "saturn", "type": "planet", "size": 8.5},
+    {"slug": "urano", "name": "Urano", "astronomy_body": "uranus", "type": "planet", "size": 6.5},
+    {"slug": "neptuno", "name": "Neptuno", "astronomy_body": "neptune", "type": "planet", "size": 6.5},
+]
+
+CARDINALS = [(0, "N"), (90, "E"), (180, "S"), (270, "O")]
+
+
+def project(altitude: float, azimuth: float) -> dict:
+    """Convierte altitud/azimut en coordenadas de la carta circular.
+
+    El cenit queda en el centro, el horizonte en el borde del circulo y el
+    norte arriba. El azimut crece hacia el este (a la derecha).
+    """
+    radius = (90.0 - altitude) / 90.0 * RADIUS
+    angle = math.radians(azimuth)
+    return {
+        "x": round(CENTER + radius * math.sin(angle), 1),
+        "y": round(CENTER - radius * math.cos(angle), 1),
+        "visible": altitude >= 0,
+    }
+
+
+def star_size(magnitude: float | None) -> float:
+    if magnitude is None:
+        return 2.5
+    return round(max(1.2, min(7.0, 3.4 - magnitude)), 2)
+
+
+def star_opacity(altitude: float) -> float:
+    if altitude < 0:
+        return 0.0
+    return round(max(0.4, min(1.0, 0.5 + altitude / 60.0)), 2)
+
+
+def _cardinals() -> list[dict]:
+    labels = []
+    for azimuth, text in CARDINALS:
+        angle = math.radians(azimuth)
+        radius = RADIUS + 28
+        labels.append(
+            {
+                "label": text,
+                "x": round(CENTER + radius * math.sin(angle), 1),
+                "y": round(CENTER - radius * math.cos(angle), 1),
+            }
+        )
+    return labels
+
+
+def build_chart(latitude: float, longitude: float, when: datetime | None = None) -> dict:
+    """Arma la carta celeste completa para un observador y momento dados."""
+    when = when or datetime.utcnow()
+
+    stars = []
+    positions: dict[str, dict] = {}
+    for item in STAR_CATALOG:
+        horizon = star_horizon(item["ra_hours"], item["dec_deg"], latitude, longitude, when)
+        point = project(horizon["altitude"], horizon["azimuth"])
+        entry = {
+            **item,
+            **point,
+            "altitude": round(horizon["altitude"], 1),
+            "azimuth": round(horizon["azimuth"], 1),
+            "size": star_size(item["magnitude"]),
+            "opacity": star_opacity(horizon["altitude"]),
+        }
+        stars.append(entry)
+        positions[item["name"]] = entry
+
+    lines = []
+    for start, end in CONSTELLATION_LINES:
+        a, b = positions.get(start), positions.get(end)
+        if a and b:
+            lines.append({"from": start, "to": end, "x1": a["x"], "y1": a["y"], "x2": b["x"], "y2": b["y"]})
+
+    bodies = []
+    for item in CHART_BODIES:
+        horizon = body_horizon(item["astronomy_body"], latitude, longitude, when)
+        if not horizon:
+            continue
+        point = project(horizon["altitude"], horizon["azimuth"])
+        bodies.append(
+            {
+                "slug": item["slug"],
+                "name": item["name"],
+                "type": item["type"],
+                "size": item["size"],
+                **point,
+                "altitude": round(horizon["altitude"], 1),
+                "azimuth": round(horizon["azimuth"], 1),
+                "opacity": star_opacity(horizon["altitude"]),
+            }
+        )
+
+    return {
+        "when": when.isoformat(),
+        "location": {"latitude": latitude, "longitude": longitude},
+        "viewBox": f"0 0 {VIEWBOX} {VIEWBOX}",
+        "center": CENTER,
+        "radius": RADIUS,
+        "cardinals": _cardinals(),
+        "stars": stars,
+        "lines": lines,
+        "bodies": bodies,
+    }
