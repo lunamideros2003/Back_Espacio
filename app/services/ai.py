@@ -49,7 +49,10 @@ def local_reply(message: str, objects: list[CelestialObject], user_level: str = 
             "advanced": hit.explain_advanced,
         }.get(user_level, hit.explain_beginner)
         kind = TYPE_LABEL.get(hit.type, hit.type)
-        return f"{hit.name} ({kind}). {expl}\n\nDato curioso: {hit.fun_fact}"
+        return (
+            f"**{hit.name}** ({kind}). {expl}\n\n"
+            f"Dato curioso: **{hit.fun_fact}**"
+        )
 
     return (
         "Puedo hablar de Mercurio, Venus, Marte, Júpiter, Saturno, la Luna, Sirio, "
@@ -71,7 +74,10 @@ def build_system_prompt(objects: list[CelestialObject], level: str) -> str:
     )
     return (
         f"Eres AstroIA, tutora de astronomía en español. Adapta el nivel: {level}. "
-        f"Sé clara, entusiasta y precisa. Catálogo:\n{catalog}"
+        f"Sé clara, entusiasta y precisa. "
+        f"Usa **negritas** con dos asteriscos para resaltar los términos importantes "
+        f"(nombres de objetos, cifras y palabras clave), nunca para títulos largos. "
+        f"Responde en máximo 6 líneas. Catálogo:\n{catalog}"
     )
 
 
