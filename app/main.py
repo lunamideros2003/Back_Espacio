@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.database import Base, engine
-from app.routers import auth, chat, objects, observe, quiz, sky
+from app.routers import auth, chat, iss, objects, observe, quiz, sky
 from app.seed import seed_if_empty
 from app.services.nasa import get_apod
 
@@ -68,6 +68,7 @@ app.include_router(observe.router)
 app.include_router(quiz.router)
 app.include_router(chat.router)
 app.include_router(sky.router)
+app.include_router(iss.router)
 
 
 if __name__ == "__main__":
