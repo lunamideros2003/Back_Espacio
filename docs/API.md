@@ -10,16 +10,22 @@ Base local: `http://localhost:4000`. Documentación interactiva: `/docs`.
 | GET | `/api/health/db` | Prueba `SELECT 1` contra SQLite/Postgres |
 | GET | `/api/debug/cors` | Origen recibido y orígenes permitidos |
 
+`/api/health/db` responde `200` con `{ "ok": true, "database": "up" }` o `503`
+con `{ "error": "Base de datos no disponible" }`.
+
 ## Ubicación
 
 | Método | Ruta | Descripción |
 | --- | --- | --- |
 | GET | `/api/place?lat=&lng=` | Resuelve etiqueta y origen de la ubicación |
-| GET | `/api/place/search?q=` | Busca ciudades por nombre |
+| GET | `/api/place/search?q=` | Busca ciudades por nombre (mínimo 2 letras) |
 
 Orden de resolución: coordenadas del navegador → perfil → IP pública →
 fallback Bogotá. La respuesta siempre trae `latitude`, `longitude`, `label` y
 `source` (`browser`, `profile`, `ip`, `search`, `fallback`).
+
+La búsqueda devuelve `{ "results": [{ "latitude", "longitude", "label", "source" }] }`
+y usa caché en memoria.
 
 ## Cielo
 
@@ -53,6 +59,8 @@ fallback Bogotá. La respuesta siempre trae `latitude`, `longitude`, `label` y
 | PATCH | `/api/auth/me` | Actualiza nombre, nivel, ciudad o coordenadas |
 | POST | `/api/observe/log` | Guarda una observación |
 | GET | `/api/observe/mine` | Observaciones del usuario |
+
+Las rutas privadas esperan `Authorization: Bearer <token>`.
 
 ## Chat
 
