@@ -1,27 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user_optional
 from app.database import get_db
 from app.models import CelestialObject, ChatMessage, User
 from app.routers.objects import serialize_object
+from app.schemas.chat import ChatIn, ClassifyIn
 from app.services.ai import chat_with_astroia, classify_description
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
-
-
-class ChatIn(BaseModel):
-    message: str
-    history: list[dict] = []
-    level: str | None = None
-
-
-class ClassifyIn(BaseModel):
-    brightness: int = 3
-    color: str = "white"
-    moving: str = "no"
-    shape: str = "point"
 
 
 @router.post("")
