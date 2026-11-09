@@ -1,4 +1,4 @@
-from app.db_schema import read_schema, schema_statements
+from app.db_schema import apply_schema, read_schema, schema_statements
 
 
 def test_schema_defines_every_table():
@@ -26,6 +26,21 @@ def test_schema_statements_ignore_comments():
     assert len(statements) == 2
     assert all("--" not in statement for statement in statements)
     assert statements[1].startswith("CREATE INDEX IF NOT EXISTS ix_x")
+
+
+def test_apply_schema_executes_every_statement():
+    class Recorder:
+        def __init__(self):
+            self.statements = []
+
+        def execute(self, statement):
+            self.statements.append(str(statement))
+
+    recorder = Recorder()
+    sql = "CREATE TABLE IF NOT EXISTS a (id SERIAL);\nCREATE INDEX IF NOT EXISTS ix_a ON a (id);"
+    assert apply_schema(recorder, sql) == 2
+    assert len(recorder.statements) == 2
+    assert recorder.statements[0].startswith("CREATE TABLE")
 
 
 def test_schema_is_split_into_statements():
