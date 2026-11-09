@@ -34,6 +34,18 @@ Usuario demo: `luna@astroia.dev` / `astroia123`
 Guía paso a paso: [`docs/SUPABASE.md`](docs/SUPABASE.md). Esquema listo para
 pegar en el SQL Editor: [`supabase/schema.sql`](supabase/schema.sql).
 
+Variables separadas opcionales:
+
+```env
+SUPABASE_DB_HOST=aws-1-us-west-2.pooler.supabase.com
+SUPABASE_DB_PORT=6543
+SUPABASE_DB_NAME=postgres
+SUPABASE_DB_USER=postgres.<ref>
+SUPABASE_DB_PASSWORD=<PASSWORD>
+```
+
+Si `DATABASE_URL` está definido, tiene prioridad.
+
 ```bash
 .venv\Scripts\python.exe scripts/check_db.py
 .venv\Scripts\python.exe scripts/init_db.py
@@ -64,5 +76,12 @@ Las posiciones de planetas y estrellas se calculan en el servidor con
 - `docs/API.md`
 - `docs/UBICACION.md`
 - `docs/SUPABASE.md`
+- `docs/ENV.md`
 - `docs/DESPLIEGUE.md`
+- `docs/RENDER.md`
+- `docs/VERCEL.md`
+- `docs/SEGURIDAD.md`
+- `docs/MIGRACION.md`
+- `docs/PRUEBAS.md`
+- `docs/CHECKLIST.md`
 - `supabase/README.md`
