@@ -1,45 +1,43 @@
 # Despliegue del backend
 
+## Orden
+
+1. Supabase: crear proyecto y ejecutar `supabase/schema.sql`.
+2. Render: configurar variables y desplegar.
+3. Vercel: apuntar `VITE_API_URL` al backend.
+
 ## Render
 
-1. Crea un **Web Service** desde el repositorio `Back_Espacio`.
-2. Runtime: Python.
-3. Build: `pip install -r requirements.txt`.
-4. Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
-5. Health check: `/api/health`.
-6. Variables:
-   - `DATABASE_URL` (Supabase, ver `docs/SUPABASE.md`)
-   - `AUTO_CREATE_TABLES=0` después del primer arranque
-   - `JWT_SECRET` largo y aleatorio
-   - `NASA_API_KEY`
-   - `AI_PROVIDER`, `GROQ_API_KEY`, `GEMINI_API_KEY` (opcionales)
-   - `CORS_ORIGINS` si usas otro dominio además de Vercel
+- Tipo: Web Service
+- Runtime: Python
+- Build: `pip install -r requirements.txt`
+- Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- Health check: `/api/health`
 
-`render.yaml` describe el servicio. No crea una base de datos propia: usa la de
-Supabase.
+Variables mínimas:
 
-## Local
-
-```bash
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 4000
+```env
+DATABASE_URL=postgresql://postgres.<ref>:<PASSWORD>@aws-1-us-west-2.pooler.supabase.com:6543/postgres?sslmode=require
+AUTO_CREATE_TABLES=0
+JWT_SECRET=<clave-larga>
 ```
 
-Usuario demo: `luna@astroia.dev` / `astroia123`.
+También se puede omitir `DATABASE_URL` y usar `SUPABASE_DB_HOST`,
+`SUPABASE_DB_PORT`, `SUPABASE_DB_NAME`, `SUPABASE_DB_USER` y
+`SUPABASE_DB_PASSWORD`.
 
-## Verificación
+## Comprobar
 
 ```bash
-curl http://localhost:4000/api/health
-curl http://localhost:4000/api/health/db
-curl "http://localhost:4000/api/place/search?q=Bogota"
-.venv\Scripts\python.exe -m pytest
+curl https://TU-API.onrender.com/api/health
+curl https://TU-API.onrender.com/api/health/db
+curl "https://TU-API.onrender.com/api/place/search?q=Pasto"
 ```
 
-## Notas
+El plan free de Render duerme el servicio. La primera petición puede tardar
+hasta un minuto.
 
-- El backend no usa `--reload` en producción.
-- Si Supabase está en el plan free, el primer request tras una pausa puede
-  tardar unos segundos.
-- `CORS_ORIGINS` se suma a los orígenes por defecto; no reemplaza Vercel.
+## CORS
+
+El dominio `https://fron-espacio.vercel.app` ya está permitido. Para dominios
+nuevos, agregarlos en `CORS_ORIGINS` separados por coma.
