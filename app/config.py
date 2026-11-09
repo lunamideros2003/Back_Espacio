@@ -1,4 +1,6 @@
-from pydantic import field_validator
+from urllib.parse import quote_plus
+
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Origenes que SIEMPRE se permiten, aunque la variable de entorno
@@ -45,11 +47,29 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def normalize_database_url(cls, value: str) -> str:
-        """Supabase sometimes prints postgres://; SQLAlchemy needs postgresql://."""
         url = (value or "").strip()
         if url.startswith("postgres://"):
             url = "postgresql://" + url[len("postgres://") :]
         return url
+
+    @model_validator(mode="after")
+    def build_supabase_database_url(self):
+        if not (self.supabase_db_host and self.supabase_db_user and self.supabase_db_password):
+            return self
+        if not self.database_url.startswith("sqlite"):
+            return self
+        host = self.supabase_db_host.strip().removeprefix("https://").removeprefix("http://").strip("/")
+        user = quote_plus(self.supabase_db_user.strip())
+        password = quote_plus(self.supabase_db_password)
+        name = self.supabase_db_name.strip("/ ") or "postgres"
+        self.database_url = (
+            f"postgresql://{user}:{password}@{host}:{self.supabase_db_port}/{name}?sslmode=require"
+        )
+        return self
+
+    @property
+    def uses_supabase(self) -> bool:
+        return "supabase." in self.database_url or "supabase.co" in self.database_url
 
     @property
     def cors_list(self) -> list[str]:

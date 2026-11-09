@@ -16,5 +16,18 @@ def test_postgres_scheme_is_normalized():
     assert configured.database_url == "postgresql://user:pass@host:6543/postgres"
 
 
+def test_supabase_parts_build_the_database_url():
+    configured = Settings(
+        supabase_db_host="aws-1-us-west-2.pooler.supabase.com",
+        supabase_db_port=6543,
+        supabase_db_user="postgres.abcdefgh",
+        supabase_db_password="secreto",
+    )
+    assert configured.database_url == (
+        "postgresql://postgres.abcdefgh:secreto@aws-1-us-west-2.pooler.supabase.com:6543/postgres?sslmode=require"
+    )
+    assert configured.uses_supabase is True
+
+
 def test_cors_list_always_includes_defaults():
     assert settings.cors_list == list(dict.fromkeys(normalize_origin(origin) for origin in DEFAULT_ORIGINS))
