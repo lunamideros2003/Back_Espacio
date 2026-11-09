@@ -11,7 +11,7 @@ def engine_options_for(url: str) -> dict:
         "pool_pre_ping": True,
     }
     if not sqlite:
-        options.update({"pool_recycle": 1800, "pool_size": 5, "max_overflow": 5})
+        options.update({"pool_recycle": 1800, "pool_size": 5, "max_overflow": 5, "pool_timeout": settings.db_pool_timeout})
     return options
 
 

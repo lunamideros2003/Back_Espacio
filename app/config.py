@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     port: int = 8000
     database_url: str = "sqlite:///./astroia.db"
     auto_create_tables: bool = True
+    db_pool_timeout: int = 30
     jwt_secret: str = "astroia-dev-secret-cambia-esto"
     nasa_api_key: str = "DEMO_KEY"
     groq_api_key: str = ""
