@@ -23,10 +23,19 @@ python -m pytest
 | Geocodificación | `test_geocode`, `test_reverse_place`, `test_ip_lookup` |
 | Caché y etiquetas | `test_place_cache`, `test_place_label` |
 | Carta celeste | `test_chart`, `test_projection` |
-| Configuración | `test_config` |
+| Base de datos | `test_database`, `test_config` |
 | Autenticación | `test_auth` |
 | Salud | `test_health` |
 | Respaldo | `test_fallback_place` |
+
+## Configuración de Supabase
+
+`test_config.py` cubre:
+
+- Normalización de `postgres://` a `postgresql://`.
+- Construcción de la cadena desde `SUPABASE_DB_*`.
+- Codificación de contraseñas con caracteres especiales.
+- Prioridad de `DATABASE_URL` sobre las variables separadas.
 
 ## Buenas prácticas
 
