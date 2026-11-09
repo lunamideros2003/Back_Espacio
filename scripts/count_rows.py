@@ -19,6 +19,7 @@ def main() -> None:
         db.close()
     for name, count in rows.items():
         print(f"{name}: {count}")
+    print(f"total: {sum(rows.values())}")
 
 
 if __name__ == "__main__":
