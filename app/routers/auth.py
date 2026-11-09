@@ -1,35 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.auth import create_token, get_current_user, hash_password, public_user, verify_password
 from app.database import get_db
 from app.models import User
+from app.schemas.auth import LoginIn, ProfileIn, RegisterIn
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
-
-
-class RegisterIn(BaseModel):
-    name: str
-    email: str
-    password: str
-    level: str = "beginner"
-    city: str | None = None
-    latitude: float | None = None
-    longitude: float | None = None
-
-
-class LoginIn(BaseModel):
-    email: str
-    password: str
-
-
-class ProfileIn(BaseModel):
-    name: str | None = None
-    level: str | None = None
-    city: str | None = None
-    latitude: float | None = None
-    longitude: float | None = None
 
 
 @router.post("/register")
