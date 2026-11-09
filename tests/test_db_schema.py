@@ -14,6 +14,12 @@ def test_schema_defines_every_table():
         assert f"create table if not exists {table}" in sql
 
 
+def test_schema_is_not_destructive():
+    sql = read_schema().lower()
+    for token in ("drop table", "drop index", "truncate", "delete from", "alter table"):
+        assert token not in sql
+
+
 def test_schema_is_split_into_statements():
     statements = schema_statements(read_schema())
     assert len(statements) == 9
