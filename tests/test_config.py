@@ -29,5 +29,14 @@ def test_supabase_parts_build_the_database_url():
     assert configured.uses_supabase is True
 
 
+def test_supabase_password_is_url_encoded():
+    configured = Settings(
+        supabase_db_host="host.supabase.co",
+        supabase_db_user="postgres.abc",
+        supabase_db_password="p@ss:#/1",
+    )
+    assert "p%40ss%3A%23%2F1" in configured.database_url
+
+
 def test_cors_list_always_includes_defaults():
     assert settings.cors_list == list(dict.fromkeys(normalize_origin(origin) for origin in DEFAULT_ORIGINS))
