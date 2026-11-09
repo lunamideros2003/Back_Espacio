@@ -1,0 +1,10 @@
+-- Observation log.
+
+CREATE TABLE IF NOT EXISTS observations (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    object_id INTEGER NOT NULL REFERENCES celestial_objects (id) ON DELETE CASCADE,
+    notes TEXT,
+    visible BOOLEAN NOT NULL DEFAULT TRUE,
+    date TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+);
