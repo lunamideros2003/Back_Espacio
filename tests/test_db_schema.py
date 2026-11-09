@@ -43,6 +43,13 @@ def test_apply_schema_executes_every_statement():
     assert recorder.statements[0].startswith("CREATE TABLE")
 
 
+def test_every_create_is_idempotent():
+    for statement in schema_statements(read_schema()):
+        upper = statement.upper()
+        if upper.startswith("CREATE TABLE") or upper.startswith("CREATE INDEX"):
+            assert "IF NOT EXISTS" in upper
+
+
 def test_schema_is_split_into_statements():
     statements = schema_statements(read_schema())
     assert len(statements) == 9
