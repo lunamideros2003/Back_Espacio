@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Origenes que SIEMPRE se permiten, aunque la variable de entorno
@@ -21,6 +22,7 @@ class Settings(BaseSettings):
 
     port: int = 8000
     database_url: str = "sqlite:///./astroia.db"
+    auto_create_tables: bool = True
     jwt_secret: str = "astroia-dev-secret-cambia-esto"
     nasa_api_key: str = "DEMO_KEY"
     groq_api_key: str = ""
@@ -30,6 +32,15 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-3.5-flash"
     # Origenes extra separados por coma. Se SUMAN a DEFAULT_ORIGINS.
     cors_origins: str = ""
+
+    @field_validator("database_url")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        """Supabase sometimes prints postgres://; SQLAlchemy needs postgresql://."""
+        url = (value or "").strip()
+        if url.startswith("postgres://"):
+            url = "postgresql://" + url[len("postgres://") :]
+        return url
 
     @property
     def cors_list(self) -> list[str]:
