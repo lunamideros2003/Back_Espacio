@@ -1,4 +1,4 @@
-from app.validation import is_valid_email, normalize_email
+from app.validation import is_valid_email, is_valid_password, normalize_email
 
 
 def test_email_requires_at_and_domain():
@@ -16,3 +16,10 @@ def test_email_is_normalized():
 def test_email_rejects_spaces():
     assert is_valid_email("lu na@astroia.dev") is False
     assert is_valid_email("luna @astroia.dev") is False
+
+
+def test_password_requires_eight_characters():
+    assert is_valid_password("astroia123") is True
+    assert is_valid_password("astroia") is False
+    assert is_valid_password("") is False
+    assert is_valid_password("        ") is False
