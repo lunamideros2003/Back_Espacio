@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.orm import Session
@@ -21,7 +21,6 @@ async def sky_chart(
     db: Session = Depends(get_db),
     user: User | None = Depends(get_current_user_optional),
 ):
-    """Carta celeste circular para un observador y un momento dados."""
     place = await resolve_place(
         lat,
         lng,
@@ -35,3 +34,4 @@ async def sky_chart(
     payload["location"]["label"] = place["label"]
     payload["location"]["source"] = place["source"]
     return payload
+

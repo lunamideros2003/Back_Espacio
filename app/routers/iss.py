@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+﻿from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user_optional
@@ -15,7 +15,6 @@ async def iss_track(
     minutes: int = Query(30, ge=5, le=180),
     step: int = Query(300, ge=60, le=900),
 ):
-    """Posicion actual de la ISS y su trayectoria alrededor de esa hora."""
     try:
         return await iss.track(minutes=minutes, step=step)
     except Exception as exc:
@@ -31,7 +30,6 @@ async def iss_overhead(
     db: Session = Depends(get_db),
     user: User | None = Depends(get_current_user_optional),
 ):
-    """Proximos pases de la ISS visibles desde un punto del planeta."""
     place = await resolve_place(
         lat,
         lng,
@@ -47,3 +45,4 @@ async def iss_overhead(
     payload["location"]["label"] = place["label"]
     payload["location"]["source"] = place["source"]
     return payload
+
