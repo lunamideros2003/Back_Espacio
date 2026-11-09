@@ -38,6 +38,20 @@ class LoginIn(BaseModel):
     email: str
     password: str
 
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, value: str) -> str:
+        if not is_valid_email(value):
+            raise ValueError("Escribe un correo válido con @ y dominio, por ejemplo nombre@correo.com")
+        return normalize_email(value)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if not (value or "").strip():
+            raise ValueError("Escribe tu contraseña")
+        return value
+
 
 class ProfileIn(BaseModel):
     name: str | None = None
