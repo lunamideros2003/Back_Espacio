@@ -1,42 +1,39 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session, joinedload
 
 from app.auth import get_current_user, get_current_user_optional
 from app.database import get_db
 from app.models import CelestialObject, Observation, User
+from app.schemas.observe import LogIn
 from app.services.nasa import get_iss_position
+from app.services.places import resolve_place
 from app.services.sky import body_horizon, compass_from_azimuth, moon_info, star_horizon, visibility_label
 from app.services.weather import get_night_sky_conditions
 
 router = APIRouter(prefix="/api/observe", tags=["observe"])
 
 
-class LogIn(BaseModel):
-    objectSlug: str
-    notes: str | None = None
-    visible: bool = True
-
-
 @router.get("/tonight")
 async def tonight(
+    request: Request,
     lat: float | None = Query(None),
     lng: float | None = Query(None),
     date: str | None = Query(None),
     db: Session = Depends(get_db),
     user: User | None = Depends(get_current_user_optional),
 ):
-    latitude = lat
-    longitude = lng
-    assumed = lat is None or lng is None
-    if assumed:
-        if user and user.latitude is not None and user.longitude is not None:
-            latitude = user.latitude
-            longitude = user.longitude
-        else:
-            latitude, longitude = 4.711, -74.0721
+    place = await resolve_place(
+        lat,
+        lng,
+        user,
+        dict(request.headers),
+        request.client.host if request.client else None,
+    )
+    latitude = place["latitude"]
+    longitude = place["longitude"]
+    assumed = place["source"] != "browser"
 
     when = datetime.fromisoformat(date) if date else datetime.utcnow()
     objects = db.query(CelestialObject).all()
@@ -83,7 +80,13 @@ async def tonight(
     recommendations.sort(key=lambda r: r["score"], reverse=True)
     return {
         "when": when.isoformat(),
-        "location": {"latitude": latitude, "longitude": longitude, "assumed": assumed},
+        "location": {
+            "latitude": latitude,
+            "longitude": longitude,
+            "assumed": assumed,
+            "label": place["label"],
+            "source": place["source"],
+        },
         "weather": weather,
         "moon": moon_info(when),
         "iss": iss,
