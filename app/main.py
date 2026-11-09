@@ -19,7 +19,8 @@ def init_database() -> None:
     if not settings.auto_create_tables:
         return
     if engine.dialect.name == "postgresql":
-        ensure_schema()
+        applied = ensure_schema()
+        print(f"[AstroIA] Esquema aplicado: {applied} sentencias.")
     Base.metadata.create_all(bind=engine)
     seed_if_empty()
 
