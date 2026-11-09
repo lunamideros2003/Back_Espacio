@@ -7,6 +7,7 @@ from sqlalchemy import text
 
 from app.config import settings
 from app.database import Base, engine
+from app.db_schema import ensure_schema
 from app.routers import auth, chat, iss, objects, observe, place, quiz, sky
 from app.seed import seed_if_empty
 from app.services.nasa import get_apod
@@ -17,6 +18,8 @@ CORS_ORIGINS = settings.cors_list
 def init_database() -> None:
     if not settings.auto_create_tables:
         return
+    if engine.dialect.name == "postgresql":
+        ensure_schema()
     Base.metadata.create_all(bind=engine)
     seed_if_empty()
 
