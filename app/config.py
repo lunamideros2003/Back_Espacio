@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     nasa_api_key: str = "DEMO_KEY"
     groq_api_key: str = ""
     gemini_api_key: str = ""
+    supabase_url: str = ""
+    supabase_publishable_key: str = ""
+    supabase_secret_key: str = ""
+    supabase_jwks_url: str = ""
+    supabase_db_host: str = ""
+    supabase_db_port: int = 5432
+    supabase_db_name: str = "postgres"
+    supabase_db_user: str = ""
+    supabase_db_password: str = ""
     # auto | groq | gemini | local
     ai_provider: str = "auto"
     gemini_model: str = "gemini-3.5-flash"
