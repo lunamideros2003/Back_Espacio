@@ -59,3 +59,12 @@ class ProfileIn(BaseModel):
     city: str | None = None
     latitude: float | None = None
     longitude: float | None = None
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if not is_valid_name(value):
+            raise ValueError("Escribe tu nombre (al menos 2 letras)")
+        return value.strip()
