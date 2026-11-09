@@ -1,10 +1,8 @@
-from urllib.parse import quote_plus
+﻿from urllib.parse import quote_plus
 
 from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Origenes que SIEMPRE se permiten, aunque la variable de entorno
-# no exista o este mal escrita. Cubre desarrollo y el despliegue en Vercel.
 DEFAULT_ORIGINS = (
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -14,7 +12,6 @@ DEFAULT_ORIGINS = (
 
 
 def normalize_origin(raw: str) -> str:
-    """Limpia espacios, saltos de linea y barra final: 'https://x.vercel.app/ ' -> 'https://x.vercel.app'"""
     origin = raw.strip().strip('"').strip("'").rstrip("/").lower()
     return origin if origin.startswith(("http://", "https://")) else ""
 
@@ -39,10 +36,8 @@ class Settings(BaseSettings):
     supabase_db_name: str = "postgres"
     supabase_db_user: str = ""
     supabase_db_password: str = ""
-    # auto | groq | gemini | local
     ai_provider: str = "auto"
     gemini_model: str = "gemini-3.5-flash"
-    # Origenes extra separados por coma. Se SUMAN a DEFAULT_ORIGINS.
     cors_origins: str = ""
 
     @field_validator("database_url")
@@ -83,3 +78,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
