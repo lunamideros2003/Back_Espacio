@@ -1,3 +1,4 @@
+import app.db_schema as schema_module
 from app.db_schema import apply_schema, read_schema, schema_statements
 
 
@@ -48,6 +49,33 @@ def test_every_create_is_idempotent():
         upper = statement.upper()
         if upper.startswith("CREATE TABLE") or upper.startswith("CREATE INDEX"):
             assert "IF NOT EXISTS" in upper
+
+
+def test_ensure_schema_uses_the_engine(monkeypatch):
+    class Connection:
+        def __init__(self):
+            self.statements = []
+
+        def execute(self, statement):
+            self.statements.append(str(statement))
+
+    class Engine:
+        def __init__(self):
+            self.connection = Connection()
+
+        def begin(self):
+            return self
+
+        def __enter__(self):
+            return self.connection
+
+        def __exit__(self, *_args):
+            return False
+
+    engine = Engine()
+    monkeypatch.setattr(schema_module, "engine", engine)
+    assert schema_module.ensure_schema() == 9
+    assert len(engine.connection.statements) == 9
 
 
 def test_schema_is_split_into_statements():
