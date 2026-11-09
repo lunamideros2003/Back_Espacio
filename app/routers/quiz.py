@@ -2,24 +2,14 @@ import json
 import random
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user, get_current_user_optional
 from app.database import get_db
 from app.models import QuizAttempt, QuizQuestion, User
+from app.schemas.quiz import SubmitIn
 
 router = APIRouter(prefix="/api/quiz", tags=["quiz"])
-
-
-class AnswerIn(BaseModel):
-    id: int
-    choice: int
-
-
-class SubmitIn(BaseModel):
-    answers: list[AnswerIn]
-    level: str | None = None
 
 
 @router.get("/generate")
