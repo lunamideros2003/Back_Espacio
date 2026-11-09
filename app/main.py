@@ -1,4 +1,4 @@
-from contextlib import asynccontextmanager
+﻿from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,7 +15,6 @@ CORS_ORIGINS = settings.cors_list
 
 
 def init_database() -> None:
-    """Create the schema on first boot. Disable it when using SQL migrations."""
     if not settings.auto_create_tables:
         return
     Base.metadata.create_all(bind=engine)
@@ -53,7 +52,6 @@ def health():
 
 @app.get("/api/health/db")
 def health_db():
-    """Diagnostic endpoint for Render + Supabase deployments."""
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
@@ -64,7 +62,6 @@ def health_db():
 
 @app.get("/api/debug/cors")
 def debug_cors(request: Request):
-    """Diagnostico: muestra que origen llego y que la API tiene permitido."""
     origin = request.headers.get("origin", "")
     return {
         "originRecibido": origin,
@@ -98,3 +95,4 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("app.main:app", host="0.0.0.0", port=int(os.getenv("PORT", settings.port)), reload=True)
+
