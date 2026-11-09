@@ -20,6 +20,14 @@ def test_schema_is_not_destructive():
         assert token not in sql
 
 
+def test_schema_statements_ignore_comments():
+    sql = "-- uno\nCREATE TABLE IF NOT EXISTS x (id SERIAL);\n-- dos\nCREATE INDEX IF NOT EXISTS ix_x ON x (id);\n"
+    statements = schema_statements(sql)
+    assert len(statements) == 2
+    assert all("--" not in statement for statement in statements)
+    assert statements[1].startswith("CREATE INDEX IF NOT EXISTS ix_x")
+
+
 def test_schema_is_split_into_statements():
     statements = schema_statements(read_schema())
     assert len(statements) == 9
