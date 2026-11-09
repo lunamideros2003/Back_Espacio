@@ -3,17 +3,26 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from app.config import settings
 from app.database import Base, engine
-from app.routers import auth, chat, iss, objects, observe, quiz, sky
+from app.routers import auth, chat, iss, objects, observe, place, quiz, sky
 from app.seed import seed_if_empty
 from app.services.nasa import get_apod
 
-Base.metadata.create_all(bind=engine)
-seed_if_empty()
-
 CORS_ORIGINS = settings.cors_list
+
+
+def init_database() -> None:
+    """Create the schema on first boot. Disable it when using SQL migrations."""
+    if not settings.auto_create_tables:
+        return
+    Base.metadata.create_all(bind=engine)
+    seed_if_empty()
+
+
+init_database()
 
 
 @asynccontextmanager
@@ -42,6 +51,17 @@ def health():
     return {"ok": True, "name": "AstroIA API", "stack": "FastAPI"}
 
 
+@app.get("/api/health/db")
+def health_db():
+    """Diagnostic endpoint for Render + Supabase deployments."""
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Base de datos no disponible") from exc
+    return {"ok": True, "database": "up"}
+
+
 @app.get("/api/debug/cors")
 def debug_cors(request: Request):
     """Diagnostico: muestra que origen llego y que la API tiene permitido."""
@@ -62,6 +82,7 @@ async def apod():
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
+app.include_router(place.router)
 app.include_router(auth.router)
 app.include_router(objects.router)
 app.include_router(observe.router)
