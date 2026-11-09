@@ -9,7 +9,7 @@ from app.services.star_catalog import STAR_CATALOG
 
 
 def build_chart(latitude: float, longitude: float, when: datetime | None = None) -> dict:
-        when = when or datetime.utcnow()
+    when = when or datetime.utcnow()
 
     stars = []
     positions: dict[str, dict] = {}

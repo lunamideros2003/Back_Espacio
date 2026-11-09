@@ -8,7 +8,7 @@ CARDINALS = [(0, "N"), (90, "E"), (180, "S"), (270, "O")]
 
 
 def project(altitude: float, azimuth: float) -> dict:
-        radius = (90.0 - altitude) / 90.0 * RADIUS
+    radius = (90.0 - altitude) / 90.0 * RADIUS
     angle = math.radians(azimuth)
     return {
         "x": round(CENTER + radius * math.sin(angle), 1),
