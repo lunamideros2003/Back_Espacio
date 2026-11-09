@@ -1,5 +1,4 @@
-"""Projection helpers for the circular sky chart."""
-
+﻿
 import math
 
 VIEWBOX = 1000
@@ -9,12 +8,7 @@ CARDINALS = [(0, "N"), (90, "E"), (180, "S"), (270, "O")]
 
 
 def project(altitude: float, azimuth: float) -> dict:
-    """Convert altitude/azimuth into circular chart coordinates.
-
-    The zenith sits at the center, the horizon on the edge and north on top.
-    Azimuth grows towards the east (right side).
-    """
-    radius = (90.0 - altitude) / 90.0 * RADIUS
+        radius = (90.0 - altitude) / 90.0 * RADIUS
     angle = math.radians(azimuth)
     return {
         "x": round(CENTER + radius * math.sin(angle), 1),
@@ -48,3 +42,4 @@ def cardinals() -> list[dict]:
             }
         )
     return labels
+

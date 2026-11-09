@@ -1,5 +1,4 @@
-"""Static astronomy data used by the sky chart."""
-
+﻿
 CONSTELLATION_LINES = [
     ("Dubhe", "Merak"),
     ("Merak", "Phecda"),
@@ -29,3 +28,4 @@ CONSTELLATION_LINES = [
     ("Pherkad", "Kochab"),
     ("Kochab", "Eta UMi"),
 ]
+

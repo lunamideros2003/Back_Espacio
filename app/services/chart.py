@@ -1,5 +1,4 @@
-"""Sky chart assembly: stars, constellation lines and solar system bodies."""
-
+﻿
 from datetime import datetime
 
 from app.services.chart_bodies import CHART_BODIES
@@ -10,8 +9,7 @@ from app.services.star_catalog import STAR_CATALOG
 
 
 def build_chart(latitude: float, longitude: float, when: datetime | None = None) -> dict:
-    """Build the full sky chart for one observer and one moment."""
-    when = when or datetime.utcnow()
+        when = when or datetime.utcnow()
 
     stars = []
     positions: dict[str, dict] = {}
@@ -65,3 +63,4 @@ def build_chart(latitude: float, longitude: float, when: datetime | None = None)
         "lines": lines,
         "bodies": bodies,
     }
+
