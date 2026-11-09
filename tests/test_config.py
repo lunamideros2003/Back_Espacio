@@ -38,5 +38,15 @@ def test_supabase_password_is_url_encoded():
     assert "p%40ss%3A%23%2F1" in configured.database_url
 
 
+def test_explicit_database_url_wins_over_parts():
+    configured = Settings(
+        database_url="postgresql://user:pass@host:5432/postgres",
+        supabase_db_host="other.supabase.co",
+        supabase_db_user="postgres.abc",
+        supabase_db_password="secreto",
+    )
+    assert configured.database_url == "postgresql://user:pass@host:5432/postgres"
+
+
 def test_cors_list_always_includes_defaults():
     assert settings.cors_list == list(dict.fromkeys(normalize_origin(origin) for origin in DEFAULT_ORIGINS))
