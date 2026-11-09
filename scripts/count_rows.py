@@ -1,5 +1,4 @@
-"""Print how many rows exist in each table (useful after Supabase setup)."""
-
+﻿
 from app.database import SessionLocal
 from app.models import CelestialObject, ChatMessage, Observation, QuizAttempt, QuizQuestion, User
 
@@ -24,3 +23,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

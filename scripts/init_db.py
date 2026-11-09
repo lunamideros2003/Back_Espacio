@@ -1,5 +1,4 @@
-"""Create the schema and seed the catalog. Safe to run more than once."""
-
+﻿
 from app.database import Base, engine
 from app.seed import seed_if_empty
 
@@ -12,3 +11,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
