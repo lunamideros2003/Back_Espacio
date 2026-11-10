@@ -46,6 +46,8 @@ class Settings(BaseSettings):
         url = (value or "").strip()
         if url.startswith("postgres://"):
             url = "postgresql://" + url[len("postgres://") :]
+        if url.startswith("postgresql://"):
+            url = "postgresql+psycopg2://" + url[len("postgresql://") :]
         return url
 
     @model_validator(mode="after")
@@ -59,7 +61,7 @@ class Settings(BaseSettings):
         password = quote_plus(self.supabase_db_password)
         name = self.supabase_db_name.strip("/ ") or "postgres"
         self.database_url = (
-            f"postgresql://{user}:{password}@{host}:{self.supabase_db_port}/{name}?sslmode=require"
+            f"postgresql+psycopg2://{user}:{password}@{host}:{self.supabase_db_port}/{name}?sslmode=require"
         )
         return self
 
