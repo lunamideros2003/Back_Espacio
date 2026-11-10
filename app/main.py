@@ -1,6 +1,7 @@
 ﻿from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
@@ -11,6 +12,7 @@ from app.db_schema import ensure_schema
 from app.routers import auth, chat, iss, objects, observe, place, quiz, sky
 from app.seed import seed_if_empty
 from app.services.nasa import get_apod
+from app.validation import validation_message
 
 CORS_ORIGINS = settings.cors_list
 
@@ -47,6 +49,11 @@ app.add_middleware(
 @app.exception_handler(HTTPException)
 async def http_error(_request, exc: HTTPException):
     return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
+
+
+@app.exception_handler(RequestValidationError)
+async def request_error(_request, exc: RequestValidationError):
+    return JSONResponse(status_code=422, content={"error": validation_message(exc.errors())})
 
 
 @app.get("/api/health")
