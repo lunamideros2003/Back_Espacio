@@ -47,12 +47,35 @@ No borra datos ni duplica tablas. Guía completa en
 4. Revisar **Logs** y confirmar las 9 sentencias.
 5. Si algo falla, revisar el detalle del error en **Logs**.
 
+## Si el deploy falla
+
+El backend ahora imprime la causa antes de seguir:
+
+```
+[AstroIA] Base de datos: postgresql://postgres.<ref>:***@host:6543/postgres
+[AstroIA] ERROR de base de datos: OperationalError: password authentication failed
+```
+
+La API arranca igual para que puedas abrir `/api/health/db` y ver los logs.
+
+Revisa en este orden:
+
+1. Si aparece `DATABASE_URL tiene prioridad`, borra `DATABASE_URL` en Render o
+   ponla correcta. Mientras exista, las variables `SUPABASE_DB_*` se ignoran.
+2. `SUPABASE_DB_USER` debe ser `postgres.<project-ref>`, no el texto de ejemplo.
+3. `SUPABASE_DB_PASSWORD` es la contraseña de la base, no la `secret key`.
+4. Prueba `SUPABASE_DB_PORT=6543` (pooler) y, si falla, `5432`.
+
+La forma más simple: Supabase → **Connect** → **Transaction pooler**, copiar la
+URI completa (incluye la contraseña) y pegarla en `DATABASE_URL`.
+
 ## Errores comunes
 
 | Error | Solución |
 | --- | --- |
 | `could not translate host name` | Revisar `SUPABASE_DB_HOST` |
-| `password authentication failed` | Revisar `SUPABASE_DB_PASSWORD` |
+| `password authentication failed` | Resolver la contraseña en Supabase y actualizarla |
 | `SSL connection is required` | Agregar `?sslmode=require` |
 | `relation does not exist` | Poner `AUTO_CREATE_TABLES=1` y redeploy |
+| `DATABASE_URL tiene prioridad` | Borrar `DATABASE_URL` o corregirla |
 | Primera carga lenta | El servicio free está despertando |
