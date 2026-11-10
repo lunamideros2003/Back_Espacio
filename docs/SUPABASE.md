@@ -71,6 +71,13 @@ contraseña y agrega `sslmode=require`.
 Deja `AUTO_CREATE_TABLES=1`. Si ya aplicaste el esquema a mano puedes usar `0`,
 pero `1` no rompe nada porque el SQL es idempotente.
 
+Importante: si `DATABASE_URL` existe en Render, las variables `SUPABASE_DB_*`
+se ignoran. Usa una sola forma o borra `DATABASE_URL`. Los logs ahora avisan:
+
+```
+[AstroIA] DATABASE_URL tiene prioridad; SUPABASE_DB_* se ignora.
+```
+
 ## 5. Probar en local
 
 ```powershell
