@@ -91,7 +91,7 @@ En **Render → servicio → Environment**:
 | `SUPABASE_DB_NAME` | `postgres` |
 | `SUPABASE_DB_USER` | `postgres.<ref>` |
 | `SUPABASE_DB_PASSWORD` | Contraseña de la base |
-| `AUTO_CREATE_TABLES` | `0` |
+| `AUTO_CREATE_TABLES` | `1` |
 | `JWT_SECRET` | Clave larga y aleatoria |
 | `NASA_API_KEY` | Tu clave o `DEMO_KEY` |
 
@@ -100,6 +100,8 @@ Comprueba:
 ```bash
 curl https://TU-API.onrender.com/api/health/db
 ```
+
+En los logs debe salir `[AstroIA] Esquema aplicado: 9 sentencias.`
 
 ## 7. Claves que NO se usan
 
@@ -122,8 +124,9 @@ No pongas ninguna de estas en variables `VITE_*`.
 ## 9. Checklist
 
 - [ ] Proyecto Supabase creado.
-- [ ] `supabase/schema.sql` ejecutado.
 - [ ] Variables `SUPABASE_DB_*` o `DATABASE_URL` en Render.
+- [ ] `AUTO_CREATE_TABLES=1`.
+- [ ] Logs muestran `Esquema aplicado: 9 sentencias`.
 - [ ] `/api/health/db` responde 200.
-- [ ] Catálogo sembrado con `scripts/init_db.py`.
+- [ ] Las 6 tablas aparecen en el Table Editor.
 - [ ] Login y quiz guardan datos.
