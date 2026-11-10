@@ -1,4 +1,5 @@
 ﻿import re
+import traceback
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
@@ -56,6 +57,25 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def catch_errors(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception as exc:
+        print(f"[AstroIA] ERROR no controlado: {type(exc).__name__}: {exc}")
+        traceback.print_exc()
+        origin = request.headers.get("origin", "")
+        headers = {"Vary": "Origin"}
+        if origin and (origin in CORS_ORIGINS or re.fullmatch(CORS_ORIGIN_REGEX, origin)):
+            headers["Access-Control-Allow-Origin"] = origin
+            headers["Access-Control-Allow-Credentials"] = "true"
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Error interno del servidor. Intenta de nuevo."},
+            headers=headers,
+        )
 
 
 @app.exception_handler(HTTPException)
