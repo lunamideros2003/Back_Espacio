@@ -4,19 +4,20 @@
 
 - [ ] Proyecto creado.
 - [ ] Contraseña de la base guardada.
-- [ ] `supabase/schema.sql` ejecutado.
-- [ ] Tablas visibles en el Table Editor.
+- [ ] Opcional: `supabase/schema.sql` revisado en el SQL Editor.
+- [ ] Tablas visibles en el Table Editor después del primer arranque.
 
 ## Backend en Render
 
 - [ ] Variables `SUPABASE_DB_*` o `DATABASE_URL` configuradas.
-- [ ] `AUTO_CREATE_TABLES=0`.
+- [ ] `AUTO_CREATE_TABLES=1`.
 - [ ] `JWT_SECRET` largo y aleatorio.
 - [ ] Deploy exitoso.
+- [ ] Logs muestran `Esquema aplicado: 9 sentencias`.
 - [ ] `/api/health` responde 200.
 - [ ] `/api/health/db` responde 200.
 - [ ] `/api/place/search?q=Bogota` devuelve resultados.
-- [ ] Catálogo sembrado con `scripts/init_db.py`.
+- [ ] Las 6 tablas existen con sus claves foráneas.
 
 ## Frontend en Vercel
 
