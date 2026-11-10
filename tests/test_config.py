@@ -13,7 +13,30 @@ def test_normalize_origin_rejects_non_http_values():
 
 def test_postgres_scheme_is_normalized():
     configured = Settings(database_url="postgres://user:pass@host:6543/postgres")
-    assert configured.database_url == "postgresql://user:pass@host:6543/postgres"
+    assert configured.database_url == "postgresql+psycopg2://user:pass@host:6543/postgres"
+
+
+def test_postgresql_url_uses_psycopg2_driver():
+    configured = Settings(database_url="postgresql://user:pass@host:6543/postgres")
+    assert configured.database_url.startswith("postgresql+psycopg2://")
+
+
+def test_psycopg2_url_is_not_changed_twice():
+    configured = Settings(database_url="postgresql+psycopg2://user:pass@host:5432/postgres")
+    assert configured.database_url == "postgresql+psycopg2://user:pass@host:5432/postgres"
+
+
+def test_built_url_can_create_an_engine():
+    from sqlalchemy import create_engine
+
+    configured = Settings(
+        supabase_db_host="host.supabase.co",
+        supabase_db_user="postgres.abc",
+        supabase_db_password="secreto",
+    )
+    engine = create_engine(configured.database_url)
+    assert engine.dialect.name == "postgresql"
+    assert engine.dialect.driver == "psycopg2"
 
 
 def test_supabase_parts_build_the_database_url():
@@ -24,7 +47,7 @@ def test_supabase_parts_build_the_database_url():
         supabase_db_password="secreto",
     )
     assert configured.database_url == (
-        "postgresql://postgres.abcdefgh:secreto@aws-1-us-west-2.pooler.supabase.com:6543/postgres?sslmode=require"
+        "postgresql+psycopg2://postgres.abcdefgh:secreto@aws-1-us-west-2.pooler.supabase.com:6543/postgres?sslmode=require"
     )
     assert configured.uses_supabase is True
 
@@ -45,7 +68,7 @@ def test_explicit_database_url_wins_over_parts():
         supabase_db_user="postgres.abc",
         supabase_db_password="secreto",
     )
-    assert configured.database_url == "postgresql://user:pass@host:5432/postgres"
+    assert configured.database_url == "postgresql+psycopg2://user:pass@host:5432/postgres"
 
 
 def test_cors_list_always_includes_defaults():
