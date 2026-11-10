@@ -35,29 +35,41 @@ async def tonight(
     longitude = place["longitude"]
     assumed = place["source"] != "browser"
 
-    when = datetime.fromisoformat(date) if date else datetime.utcnow()
+    try:
+        when = datetime.fromisoformat(date) if date else datetime.utcnow()
+    except ValueError as exc:
+        raise HTTPException(400, "La fecha no es valida") from exc
     objects = db.query(CelestialObject).all()
     weather = await get_night_sky_conditions(latitude, longitude)
     try:
         iss = await get_iss_position()
     except Exception:
         iss = None
+    try:
+        moon = moon_info(when)
+    except Exception as exc:
+        print(f"[AstroIA] Luna no disponible: {type(exc).__name__}: {exc}")
+        moon = {"phaseDeg": 0, "phaseName": "Sin datos", "illumination": 0}
 
     recommendations = []
     for obj in objects:
-        hor = (
-            body_horizon(obj.astronomy_body, latitude, longitude, when)
-            if obj.astronomy_body
-            else star_horizon(obj.ra_hours, obj.dec_deg, latitude, longitude, when)
-        )
-        vis = visibility_label(hor["altitude"] if hor else None, obj.magnitude)
-        altitude = hor["altitude"] if hor else 0
-        score = (40 if vis["visible"] else 0) + max(0, altitude)
-        if obj.magnitude is not None:
-            score += max(0, 15 - obj.magnitude * 2)
-        else:
-            score += 5
-        score -= weather["cloudCover"] / 8
+        try:
+            hor = (
+                body_horizon(obj.astronomy_body, latitude, longitude, when)
+                if obj.astronomy_body
+                else star_horizon(obj.ra_hours, obj.dec_deg, latitude, longitude, when)
+            )
+            vis = visibility_label(hor["altitude"] if hor else None, obj.magnitude)
+            altitude = hor["altitude"] if hor else 0
+            score = (40 if vis["visible"] else 0) + max(0, altitude)
+            if obj.magnitude is not None:
+                score += max(0, 15 - obj.magnitude * 2)
+            else:
+                score += 5
+            score -= weather["cloudCover"] / 8
+        except Exception as exc:
+            print(f"[AstroIA] Objeto omitido ({obj.slug}): {type(exc).__name__}: {exc}")
+            continue
         if vis["visible"]:
             recommendations.append(
                 {
@@ -88,7 +100,7 @@ async def tonight(
             "source": place["source"],
         },
         "weather": weather,
-        "moon": moon_info(when),
+        "moon": moon,
         "iss": iss,
         "recommendations": recommendations[:8],
     }
