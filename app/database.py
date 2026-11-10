@@ -24,6 +24,14 @@ class Base(DeclarativeBase):
     pass
 
 
+def database_target(url=None) -> str:
+    target = url or getattr(engine, "url", None)
+    if target is None:
+        return "desconocida"
+    render = getattr(target, "render_as_string", None)
+    return render(hide_password=True) if render else str(target)
+
+
 def get_db():
     db = SessionLocal()
     try:
