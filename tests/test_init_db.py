@@ -49,3 +49,27 @@ def test_init_database_skips_schema_on_sqlite(monkeypatch):
     main_module.init_database()
 
     assert calls == ["tables", "seed"]
+
+
+def test_init_database_keeps_running_on_error(monkeypatch):
+    class Dialect:
+        name = "postgresql"
+
+    class Engine:
+        dialect = Dialect()
+
+    calls = []
+
+    def broken_schema():
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(main_module.settings, "auto_create_tables", True)
+    monkeypatch.setattr(main_module.settings, "supabase_db_host", "")
+    monkeypatch.setattr(main_module, "engine", Engine())
+    monkeypatch.setattr(main_module, "ensure_schema", broken_schema)
+    monkeypatch.setattr(main_module.Base.metadata, "create_all", lambda **_kwargs: calls.append("tables"))
+    monkeypatch.setattr(main_module, "seed_if_empty", lambda: calls.append("seed"))
+
+    main_module.init_database()
+
+    assert calls == []
