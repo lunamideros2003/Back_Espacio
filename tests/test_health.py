@@ -9,6 +9,7 @@ def test_health():
     response = client.get("/api/health")
     assert response.status_code == 200
     assert response.json()["ok"] is True
+    assert response.json()["version"] == "1.1.0"
 
 
 def test_health_db():

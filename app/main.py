@@ -48,7 +48,7 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="AstroIA API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="AstroIA API", version="1.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -90,7 +90,7 @@ async def request_error(_request, exc: RequestValidationError):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "name": "AstroIA API", "stack": "FastAPI"}
+    return {"ok": True, "name": "AstroIA API", "stack": "FastAPI", "version": app.version}
 
 
 @app.get("/api/health/db")
