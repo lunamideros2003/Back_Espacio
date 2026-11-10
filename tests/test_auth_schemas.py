@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.schemas.auth import RegisterIn
+from app.schemas.auth import LoginIn, ProfileIn, RegisterIn
 
 
 def test_register_normalizes_email():
@@ -26,3 +26,27 @@ def test_register_rejects_empty_name():
     with pytest.raises(ValidationError) as error:
         RegisterIn(name=" ", email="luna@astroia.dev", password="astroia123")
     assert "nombre" in str(error.value).lower()
+
+
+def test_login_requires_at_in_email():
+    with pytest.raises(ValidationError):
+        LoginIn(email="luna.astroia.dev", password="astroia123")
+
+
+def test_login_normalizes_email():
+    assert LoginIn(email="LUNA@AstroIA.dev", password="astroia123").email == "luna@astroia.dev"
+
+
+def test_login_requires_password():
+    with pytest.raises(ValidationError):
+        LoginIn(email="luna@astroia.dev", password="   ")
+
+
+def test_profile_name_is_optional():
+    assert ProfileIn().name is None
+    assert ProfileIn(name=" Luna ").name == "Luna"
+
+
+def test_profile_rejects_short_name():
+    with pytest.raises(ValidationError):
+        ProfileIn(name="L")
