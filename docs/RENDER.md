@@ -78,4 +78,9 @@ URI completa (incluye la contraseña) y pegarla en `DATABASE_URL`.
 | `SSL connection is required` | Agregar `?sslmode=require` |
 | `relation does not exist` | Poner `AUTO_CREATE_TABLES=1` y redeploy |
 | `DATABASE_URL tiene prioridad` | Borrar `DATABASE_URL` o corregirla |
+| `No module named 'psycopg'` | Actualizar al ultimo commit; la app fuerza `psycopg2` |
 | Primera carga lenta | El servicio free está despertando |
+
+El backend convierte cualquier `postgres://` o `postgresql://` en
+`postgresql+psycopg2://` al leer la variable. Asi SQLAlchemy usa el driver de
+`requirements.txt` y no intenta importar `psycopg` v3.
