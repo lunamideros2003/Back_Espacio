@@ -31,12 +31,11 @@ Usuario demo: `luna@astroia.dev` / `astroia123`
 
 ## Supabase
 
-Guía paso a paso: [`docs/SUPABASE.md`](docs/SUPABASE.md). Esquema listo para
-pegar en el SQL Editor: [`supabase/schema.sql`](supabase/schema.sql).
-
-Variables separadas opcionales:
+Guía paso a paso: [`docs/SUPABASE.md`](docs/SUPABASE.md). El backend crea las
+tablas solo con `AUTO_CREATE_TABLES=1`: [`docs/AUTO_CREATE.md`](docs/AUTO_CREATE.md).
 
 ```env
+AUTO_CREATE_TABLES=1
 SUPABASE_DB_HOST=aws-1-us-west-2.pooler.supabase.com
 SUPABASE_DB_PORT=6543
 SUPABASE_DB_NAME=postgres
@@ -76,6 +75,7 @@ Las posiciones de planetas y estrellas se calculan en el servidor con
 - `docs/API.md`
 - `docs/UBICACION.md`
 - `docs/SUPABASE.md`
+- `docs/AUTO_CREATE.md`
 - `docs/ENV.md`
 - `docs/DESPLIEGUE.md`
 - `docs/RENDER.md`
