@@ -1,9 +1,9 @@
-# AstroIA — API (FastAPI)
+# AstroIA API
 
-Explorador inteligente del universo. SQLite en desarrollo y **Supabase
-Postgres** en producción.
+Hice este backend con FastAPI para que la página tenga datos del cielo, cuentas
+y chatbot. En mi computador uso SQLite y en producción uso Supabase Postgres.
 
-## Cómo arrancar
+## Cómo arrancarlo
 
 ```bash
 cd Back_Espacio
@@ -13,26 +13,22 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 4000
 ```
 
-API: http://localhost:4000  
-Docs: http://localhost:4000/docs
+La API queda en http://localhost:4000 y la documentación en
+http://localhost:4000/docs.
 
-Usuario demo: `luna@astroia.dev` / `astroia123`
+## Qué hace
 
-## Qué incluye
+- Calcula estrellas y planetas con PyEphem.
+- Busca mi ubicación automáticamente, sin pedir latitud ni longitud.
+- Da recomendaciones para esta noche con el clima real.
+- Muestra la ISS y sus pases visibles.
+- Responde en el chatbot con Groq, Gemini o en modo local.
+- Guarda usuarios, quiz, observaciones y mensajes.
 
-- Ubicación automática sin latitud/longitud manuales: GPS → perfil → IP →
-  búsqueda de ciudad → fallback.
-- Carta celeste circular con catálogo J2000 y proyección propia.
-- Recomendaciones nocturnas con clima real (Open-Meteo).
-- ISS: posición, órbita y pases visibles.
-- Chatbot multi-proveedor (Groq, Gemini o modo local).
-- Auth JWT, quiz, observaciones y perfil.
-- Tests con pytest (sin llamadas reales a internet).
+## Base de datos
 
-## Supabase
-
-Guía paso a paso: [`docs/SUPABASE.md`](docs/SUPABASE.md). El backend crea las
-tablas solo con `AUTO_CREATE_TABLES=1`: [`docs/AUTO_CREATE.md`](docs/AUTO_CREATE.md).
+Con `AUTO_CREATE_TABLES=1` el backend crea las tablas solo al arrancar. No borra
+datos y puedo ejecutarlo varias veces sin errores.
 
 ```env
 AUTO_CREATE_TABLES=1
@@ -43,33 +39,25 @@ SUPABASE_DB_USER=postgres.<ref>
 SUPABASE_DB_PASSWORD=<PASSWORD>
 ```
 
-Si `DATABASE_URL` está definido, tiene prioridad.
+Si tengo `DATABASE_URL`, esa manda. Los detalles están en
+[`docs/AUTO_CREATE.md`](docs/AUTO_CREATE.md).
 
-```bash
-.venv\Scripts\python.exe scripts/check_db.py
-.venv\Scripts\python.exe scripts/init_db.py
-.venv\Scripts\python.exe scripts/count_rows.py
-```
-
-## Tests
+## Pruebas
 
 ```bash
 .venv\Scripts\python.exe -m pytest
 ```
 
-## APIs gratuitas usadas
+## Servicios gratuitos que uso
 
-- NASA APOD e Images API (`DEMO_KEY` o tu clave en https://api.nasa.gov)
-- Open-Meteo (nubes, visibilidad y búsqueda de ciudades)
-- ipwho.is (ubicación aproximada por IP)
-- BigDataCloud / Nominatim (etiqueta de una coordenada)
-- Where The ISS At
-- Opcional: Groq (`GROQ_API_KEY`) para el chatbot con Llama
+- NASA APOD e Images (`DEMO_KEY` o mi clave de https://api.nasa.gov)
+- Open-Meteo para el clima y las ciudades
+- ipwho.is para la ubicación aproximada
+- BigDataCloud y Nominatim para nombres de lugares
+- Where The ISS At para la ISS
+- Groq o Gemini para el chatbot, si tengo clave
 
-Las posiciones de planetas y estrellas se calculan en el servidor con
-**PyEphem**.
-
-## Documentación
+## Más detalles
 
 - `docs/ARQUITECTURA.md`
 - `docs/API.md`
