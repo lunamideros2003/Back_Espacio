@@ -26,8 +26,19 @@ Si aparece un error raro de conexión, prueba `5432`.
 
 ## 3. Crear las tablas
 
-Abre **SQL Editor** y ejecuta `supabase/schema.sql`. También puedes ejecutar
-`01_users.sql` a `05_chat.sql` en orden.
+No hace falta ejecutar nada a mano. Con `AUTO_CREATE_TABLES=1` el backend
+aplica `supabase/schema.sql` al arrancar: crea las 6 tablas y los 3 índices
+solo si faltan, sin borrar datos.
+
+El paso manual sigue disponible si prefieres revisar el SQL antes: abre
+**SQL Editor** y ejecuta `supabase/schema.sql`. Es idempotente, así que se
+puede correr varias veces sin errores.
+
+Detalle completo en [`AUTO_CREATE.md`](AUTO_CREATE.md).
+
+```env
+AUTO_CREATE_TABLES=1
+```
 
 ## 4. Configurar el backend
 
