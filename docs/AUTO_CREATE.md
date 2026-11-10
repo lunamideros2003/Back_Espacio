@@ -56,7 +56,9 @@ SUPABASE_DB_PASSWORD=<contraseña-de-la-base>
 JWT_SECRET=<clave-larga>
 ```
 
-`DATABASE_URL` también sirve y tiene prioridad sobre `SUPABASE_DB_*`.
+`DATABASE_URL` también sirve y tiene prioridad sobre `SUPABASE_DB_*`. El backend
+normaliza el esquema a `postgresql+psycopg2://`, que es el driver instalado por
+`requirements.txt`.
 
 ## Cómo comprobar
 
