@@ -4,7 +4,8 @@
 
 1. Crear el proyecto.
 2. Copiar host, puerto, base, usuario y contraseña.
-3. Ejecutar `supabase/schema.sql` en el SQL Editor.
+3. No hace falta ejecutar SQL: `AUTO_CREATE_TABLES=1` crea el esquema al
+   arrancar. Si quieres revisarlo antes, `supabase/schema.sql` es idempotente.
 
 ## 2. Probar la conexión
 
@@ -16,16 +17,12 @@ SUPABASE_DB_PORT=6543
 SUPABASE_DB_NAME=postgres
 SUPABASE_DB_USER=postgres.<ref>
 SUPABASE_DB_PASSWORD=<PASSWORD>
-AUTO_CREATE_TABLES=0
+AUTO_CREATE_TABLES=1
 JWT_SECRET=<clave-larga>
 ```
 
-Ejecutar:
-
-```powershell
-.\.venv\Scripts\python.exe scripts/check_db.py
-.\.venv\Scripts\python.exe scripts/count_rows.py
-```
+Ejecutar `scripts/check_db.py` para validar credenciales. El esquema se crea
+solo al importar la app o con `scripts/init_db.py`.
 
 ## 3. Sembrar el catálogo
 
@@ -46,9 +43,9 @@ Si ya hay usuarios o bitácoras en SQLite, exportarlos e importarlos con
 ## 5. Cambiar Render
 
 1. Agregar las variables `SUPABASE_DB_*` o `DATABASE_URL`.
-2. Poner `AUTO_CREATE_TABLES=0`.
+2. Poner `AUTO_CREATE_TABLES=1`.
 3. Redeploy.
-4. Probar `/api/health/db`.
+4. Revisar los logs y probar `/api/health/db`.
 
 ## 6. Verificar
 
