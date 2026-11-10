@@ -48,7 +48,7 @@ Hay dos formas equivalentes. Usa solo una.
 
 ```env
 DATABASE_URL=postgresql://postgres.<ref>:<PASSWORD>@aws-1-us-west-2.pooler.supabase.com:6543/postgres?sslmode=require
-AUTO_CREATE_TABLES=0
+AUTO_CREATE_TABLES=1
 JWT_SECRET=una-clave-larga-y-aleatoria
 ```
 
@@ -60,13 +60,16 @@ SUPABASE_DB_PORT=6543
 SUPABASE_DB_NAME=postgres
 SUPABASE_DB_USER=postgres.<ref>
 SUPABASE_DB_PASSWORD=<PASSWORD>
-AUTO_CREATE_TABLES=0
+AUTO_CREATE_TABLES=1
 JWT_SECRET=una-clave-larga-y-aleatoria
 ```
 
 `DATABASE_URL` tiene prioridad. Si no se define y existen las variables
 `SUPABASE_DB_*`, el backend arma la cadena automáticamente, codifica la
 contraseña y agrega `sslmode=require`.
+
+Deja `AUTO_CREATE_TABLES=1`. Si ya aplicaste el esquema a mano puedes usar `0`,
+pero `1` no rompe nada porque el SQL es idempotente.
 
 ## 5. Probar en local
 
