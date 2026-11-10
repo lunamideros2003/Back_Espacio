@@ -78,6 +78,14 @@ def test_ensure_schema_uses_the_engine(monkeypatch):
     assert len(engine.connection.statements) == 9
 
 
+def test_schema_declares_foreign_keys_and_indexes():
+    sql = read_schema().lower()
+    assert sql.count("references") == 5
+    assert sql.count("create index if not exists") == 3
+    assert "on delete cascade" in sql
+    assert "on delete set null" in sql
+
+
 def test_schema_is_split_into_statements():
     statements = schema_statements(read_schema())
     assert len(statements) == 9
