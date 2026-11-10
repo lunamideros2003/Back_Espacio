@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from app.config import settings
-from app.database import Base, engine
+from app.database import Base, database_target, engine
 from app.db_schema import ensure_schema
 from app.routers import auth, chat, iss, objects, observe, place, quiz, sky
 from app.seed import seed_if_empty
@@ -19,12 +19,21 @@ CORS_ORIGINS = settings.cors_list
 
 def init_database() -> None:
     if not settings.auto_create_tables:
+        print("[AstroIA] AUTO_CREATE_TABLES=0: se omite la creacion de tablas.")
         return
-    if engine.dialect.name == "postgresql":
-        applied = ensure_schema()
-        print(f"[AstroIA] Esquema aplicado: {applied} sentencias.")
-    Base.metadata.create_all(bind=engine)
-    seed_if_empty()
+    print(f"[AstroIA] Base de datos: {database_target()}")
+    if settings.supabase_db_host and not settings.database_url.startswith("sqlite"):
+        print("[AstroIA] DATABASE_URL tiene prioridad; SUPABASE_DB_* se ignora.")
+    try:
+        if engine.dialect.name == "postgresql":
+            applied = ensure_schema()
+            print(f"[AstroIA] Esquema aplicado: {applied} sentencias.")
+        Base.metadata.create_all(bind=engine)
+        seed_if_empty()
+        print("[AstroIA] Base de datos lista.")
+    except Exception as exc:
+        print(f"[AstroIA] ERROR de base de datos: {type(exc).__name__}: {exc}")
+        print("[AstroIA] La API arranca igual. Revisa /api/health/db y las variables.")
 
 
 init_database()
@@ -67,7 +76,11 @@ def health_db():
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
     except Exception as exc:
-        raise HTTPException(status_code=503, detail="Base de datos no disponible") from exc
+        print(f"[AstroIA] health/db: {type(exc).__name__}: {exc}")
+        raise HTTPException(
+            status_code=503,
+            detail="Base de datos no disponible. Revisa DATABASE_URL y SUPABASE_DB_*.",
+        ) from exc
     return {"ok": True, "database": "up"}
 
 
