@@ -19,3 +19,19 @@ def is_valid_password(value: str | None) -> bool:
 
 def is_valid_name(value: str | None) -> bool:
     return len((value or "").strip()) >= NAME_MIN_LENGTH
+
+
+FIELD_LABELS = {"name": "nombre", "email": "correo", "password": "contraseña"}
+
+
+def validation_message(errors: list[dict] | None) -> str:
+    if not errors:
+        return "Revisa los datos del formulario."
+    first = errors[0]
+    raw = str(first.get("msg") or "").replace("Value error, ", "").strip()
+    loc = first.get("loc") or ()
+    field = str(loc[-1]) if loc else ""
+    if raw and raw != "Field required":
+        return raw
+    label = FIELD_LABELS.get(field, field or "formulario")
+    return f"Revisa el campo {label}."
