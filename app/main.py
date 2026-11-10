@@ -1,4 +1,5 @@
-﻿from contextlib import asynccontextmanager
+﻿import re
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -15,6 +16,7 @@ from app.services.nasa import get_apod
 from app.validation import validation_message
 
 CORS_ORIGINS = settings.cors_list
+CORS_ORIGIN_REGEX = r"https://fron-espacio[a-z0-9-]*\.vercel\.app|http://(localhost|127\.0\.0\.1):[0-9]+"
 
 
 def init_database() -> None:
@@ -49,6 +51,7 @@ app = FastAPI(title="AstroIA API", version="1.0.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
+    allow_origin_regex=CORS_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -87,10 +90,12 @@ def health_db():
 @app.get("/api/debug/cors")
 def debug_cors(request: Request):
     origin = request.headers.get("origin", "")
+    regex_ok = bool(re.fullmatch(CORS_ORIGIN_REGEX, origin))
     return {
         "originRecibido": origin,
-        "permitido": origin in CORS_ORIGINS,
+        "permitido": origin in CORS_ORIGINS or regex_ok,
         "origenesPermitidos": CORS_ORIGINS,
+        "regexPermitido": regex_ok,
         "corsDesdeVariable": [o.strip() for o in settings.cors_origins.split(",") if o.strip()],
     }
 
